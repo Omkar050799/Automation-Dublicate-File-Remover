@@ -93,7 +93,7 @@ def MailSender(filename, time,MailID,FileCountX,FileCountX1):
 
         s.starttls()
 
-        s.login(fromaddr, "89565580")
+        s.login(fromaddr, "-----")
 
         text = msg.as_string()
 
