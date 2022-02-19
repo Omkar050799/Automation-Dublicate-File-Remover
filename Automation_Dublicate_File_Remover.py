@@ -98,7 +98,7 @@ def MailSender(
 
         s.starttls()
 
-        s.login(fromaddr, "89565580")
+        s.login(fromaddr, "----")
 
         text = msg.as_string()
 
