@@ -18,21 +18,20 @@
 '''
 ###################################################################################################################################################
 
-import time
+
+from datetime import datetime
 import os
 import hashlib
 import time
-import psutil
 from urllib.request import urlopen
 import smtplib
 import schedule
 from sys import *
-from email import encoders
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
-import shutil
 import datetime
+import shutil
 
 
 def is_connected():
@@ -44,7 +43,13 @@ def is_connected():
         return False
 
 
-def MailSender(filename, time,MailID,FileCountX,FileCountX1):
+def MailSender(
+                filename,
+                time,
+                MailID,
+                FileCountX,
+                FileCountX1
+                ):
     try:
         fromaddr = "omimalpote9130@gmail.com"
         toaddr = MailID
@@ -93,7 +98,7 @@ def MailSender(filename, time,MailID,FileCountX,FileCountX1):
 
         s.starttls()
 
-        s.login(fromaddr, "-----")
+        s.login(fromaddr, "89565580")
 
         text = msg.as_string()
 
@@ -111,7 +116,10 @@ def MailSender(filename, time,MailID,FileCountX,FileCountX1):
 
 
 # Working of Function is to Delete the Duplicates
-def DeleteFiles(dict1):
+def DeleteFiles(
+                dict1
+                ):
+
     results = list(filter(lambda x: len(x) > 1, dict1.values()))
 
     dups2 = {}
@@ -143,14 +151,18 @@ def DeleteFiles(dict1):
         '''
     else:
         print("No duplicate files found : ")
+        dups2[i] = 'No duplicate files found : '
 
     print("Delete File:\n",dups2)
     return dups2,iCnt2
 
-    # Working of Function is to check file 1 by 1 and return the CheckSum of File
+#''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+# Working of Function is to check file 1 by 1 and return the CheckSum of File
 
-
-def hashfile(path, blocksize=1024):
+def hashfile(
+             path,
+             blocksize=1024
+            ):
     afile = open(path, "rb")
     hasher = hashlib.md5()
     buf = afile.read(blocksize)
@@ -162,7 +174,9 @@ def hashfile(path, blocksize=1024):
 
 
 # Working of Function is to Find Duplicates
-def findDup(path):
+def findDup(
+            path
+            ):
     flag = os.path.isabs(path)
 
     if flag == False:
@@ -171,6 +185,7 @@ def findDup(path):
     exists = os.path.isdir(path)
 
     dups = {}
+    iCnt3 = 0
 
     if exists:
         for dirName, subdirs, fileList in os.walk(path):
@@ -178,17 +193,19 @@ def findDup(path):
             for filen in fileList:
                 path = os.path.join(dirName, filen)
                 file_hash = hashfile(path)
-
+                iCnt3 += 1
                 if file_hash in dups:
                     dups[file_hash].append(path)
                 else:
                     dups[file_hash] = [path]
 
-    return dups
+    return dups,iCnt3
 
 
 # Working of Function is to Print Duplicate File With Absolute Path
-def printResults(dict1):
+def printResults(
+                 dict1
+                ):
     results = list(filter(lambda x: len(x) > 1, dict1.values()))
 
     iCnt3 = 0
@@ -224,9 +241,6 @@ def printResults(dict1):
 
             iCnt3 += 1
             fd.write(results[x])
-
-        return fileName,iCnt3
-
     else:
         fd = open(NameX3, 'a')
         fd.write("\n")
@@ -235,21 +249,53 @@ def printResults(dict1):
         fd.write("No duplicate files found.")
         print("No duplicate files found.")
 
-def MakeDir(NameDir,FileNameX):
+    return fileName
 
-    os.mkdir(NameDir)
-    dest = shutil.move(FileNameX,NameDir)
+# Working of Function is make 1 directory and move our created log file in it
+def MakeDir(
+            FileNameX,
+            DirName='LogFiles'
+            ):
+
+    if not os.path.exists(DirName):
+        os.mkdir(DirName)
+
+    GivenDirPath = os.getcwd()
+    CreatedDirPath = os.path.join(GivenDirPath, DirName)
+
+    if os.path.exists(FileNameX):
+        shutil.move(FileNameX, CreatedDirPath)
+    print("Your File Gets Moved into folder")
 
 
+'''
+def Create(Name, DirName='LogFiles'):
+    global abs, fd
+    File_Name = DirName + datetime.now().strftime("%H-%M-%S") + ".txt"
+    if not os.path.exists(DirName):
+        os.mkdir(DirName)
+    for root, dir, file in os.walk("."):
+        for dirnames in dir:
+            abs = os.path.join(os.getcwd(), DirName, File_Name)
+            if not os.path.exists(abs):
+                fd = open(abs, "a")
+                Heading = "=" * 80
+                fd.write(Heading)
+                fd.write(f"\nRecords of Removed Duplicate Files From Directory : {Name} \n")
+                fd.write(Heading)
+                fd.write("\n")
+ '''
+
+# Callie Funcion
 def CallX():
 
     try:
 
         arr = {}
         startTime = time.time()
-        arr = findDup(argv[1])
-        arr,FileCount1 = DeleteFiles(arr)
-        FileNameX,FileCount2 = printResults(arr)
+        arr,TotalCount2 = findDup(argv[1])
+        arr,DeleteCount1 = DeleteFiles(arr)
+        FileNameX = printResults(arr)
         endTime = time.time()
         FinalTimeX = (endTime - startTime)
 
@@ -258,12 +304,12 @@ def CallX():
         connected = is_connected()
 
         if connected:
-            bRet = MailSender(FileNameX, FinalTimeX,argv[2],FileCount1,FileCount2)
+            bRet = MailSender(FileNameX, FinalTimeX,argv[3],DeleteCount1,TotalCount2)
         else:
             print("Enable to connect internet...")
 
         if bRet == True:
-            MakeDir('Marvellous',FileNameX)
+            MakeDir(FileNameX)
 
     except ValueError:
         print("Error : Invalid datatype of input...")
@@ -272,11 +318,12 @@ def CallX():
         print("Error : Invalid input", E)
 
 
+# Main Function
 def main():
     print("------------------- : Automation 1 ---------------------")
     print("Script Name : ", argv[0])
 
-    if ((len(argv) != 3)):
+    if ((len(argv) != 4)):
         print("Invalid Number of Arguments.....")
         print("Use -u flag for ussage...")
         print("Use -h flag for Help.....")
@@ -288,11 +335,12 @@ def main():
 
     if ((argv[1] == "-h") or (argv[1] == "-H")):
         print("First_Argument : ApplicationName AbsolutePath_of_Directory Extension....")
-        print("Second_Argument : The mail Address Where you wants to send the log file of data...")
+        print("Second_Argument : Time in minitus for Getting you delelted file records... ex- for 20 mini = '20'")
+        print("Third_Argument : The mail Address Where you wants to send the log file of data...")
 
         exit()
 
-    schedule.every(1).minutes.do(CallX)
+    schedule.every(int(argv[2])).minutes.do(CallX)
 
     while True:
         schedule.run_pending()
